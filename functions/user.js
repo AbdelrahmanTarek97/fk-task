@@ -5,9 +5,11 @@ const express = require("express");
 // Import CORS middleware to enable cors
 const cors = require("cors");
 // Import mongoose
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 // Import database json file
-const dbConfig = require("../connection/dbConfig.json")
+const config = require("../config/config.json");
+// Import JWT
+const jwt = require('jsonwebtoken');
 // Placeholder for User model
 let User;
 
@@ -26,9 +28,8 @@ app.use(cors());
 // Check if database is connected or not
 app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
-    uri = dbConfig.uri;
+    uri = config.dbUri;
     await mongoose.connect(uri);
-    console.log("db connected!");
   }
   if (!User)
     User = require("../models/user")
@@ -48,26 +49,34 @@ app.post("/user/register", async (req, res, next) => {
   try {
     // Validate username
     if (!username) {
-      throw Error("username cannot be empty!")
+      throw Error("Username cannot be empty!")
     }
     let match = username.match(/^[a-zA-Z0-9]+$/);
     if (!(match && username === match[0]))
-      throw Error("username can only consist of letters and numbers!")
+      throw Error("Username can only consist of letters and numbers!")
+
+    // check if user already exist
+    // Validate if user exist in our database
+    const oldUser = await User.findOne({ username });
+
+    if (oldUser) {
+      throw Error("User already exists. Please login!");
+    }
 
     // Validate password
     if (!password) {
-      throw Error("password cannot be empty!")
+      throw Error("Password cannot be empty!")
     }
     match = password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/);
     if (!(match && password === match[0]))
-      throw Error(`password needs to contain: at least 8 characters, at least 1 number, at least 1 lowercase character (a-z), at least 1 uppercase character (A-Z)`)
+      throw Error(`Password needs to contain: at least 8 characters, at least 1 number, at least 1 lowercase character (a-z), at least 1 uppercase character (A-Z)`)
 
     // Validate role
     if (!role) {
-      throw Error("role cannot be empty!")
+      throw Error("Role cannot be empty!")
     }
     if (!["buyer", "seller"].includes(role)) {
-      throw error("role needs to be either buyer or seller!")
+      throw error("Role needs to be either buyer or seller!")
     }
 
     // Set deposit to zero
@@ -84,19 +93,63 @@ app.post("/user/register", async (req, res, next) => {
     // Create the user
     user = await user.save();
 
+    // Create JWT token for authentication
+    const token = jwt.sign(
+      { username, role },
+      config.tokenPK,
+      {
+        expiresIn: "2h",
+      }
+    );
+
     return res.status(200).json({
       message: "User was created successfully!",
       user: {
         username,
         role,
-        deposit
+        deposit,
+        token
       }
     });
 
   } catch (err) {
+    console.log(err);
     return res.status(400).json({
       message: err.message
     })
+  }
+});
+
+app.post("/user/login", async (req, res) => {
+  // Our login logic starts here
+  try {
+    // Get user input
+    const { username, password } = req.body;
+
+    // Validate user input
+    if (!(username && password)) {
+      res.status(400).send({ message: "All input is required" });
+    }
+    // Validate if user exist in our database
+    const user = await User.findOne({ username });
+
+    if (user && (await user.validPassword(password))) {
+      // Create token
+      const token = jwt.sign(
+        { username, role: user.role },
+        config.tokenPK,
+        {
+          expiresIn: "2h",
+        }
+      );
+
+      // user
+      return res.status(200).json({ token });
+    }
+    return res.status(400).send({ message: "Invalid Credentials" });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ message: "Invalid Credentials" });
   }
 });
 

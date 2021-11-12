@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-// Import database json file
-const dbConfig = require("../connection/dbConfig.json")
 // Require crypto lib
 const crypto = require("crypto");
 // Create the schema for a user

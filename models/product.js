@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-// Import database json file
-const dbConfig = require("../connection/dbConfig.json")
 
 // Create the schema for a product
 const schema = new mongoose.Schema({
