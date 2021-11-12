@@ -43,32 +43,61 @@ app.post("/user/register", async (req, res, next) => {
   let { body } = req;
   // Extract variables from the request body
   let { username, password, role } = body;
-  // Validate username
-  if (!username) {
 
+  // Catch any validation errors
+  try {
+    // Validate username
+    if (!username) {
+      throw Error("username cannot be empty!")
+    }
+    let match = username.match(/^[a-zA-Z0-9]+$/);
+    if (!(match && username === match[0]))
+      throw Error("username can only consist of letters and numbers!")
+
+    // Validate password
+    if (!password) {
+      throw Error("password cannot be empty!")
+    }
+    match = password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/);
+    if (!(match && password === match[0]))
+      throw Error(`password needs to contain: at least 8 characters, at least 1 number, at least 1 lowercase character (a-z), at least 1 uppercase character (A-Z)`)
+
+    // Validate role
+    if (!role) {
+      throw Error("role cannot be empty!")
+    }
+    if (!["buyer", "seller"].includes(role)) {
+      throw error("role needs to be either buyer or seller!")
+    }
+
+    // Set deposit to zero
+    let deposit = 0;
+
+    // Create a new user using the mongoose model
+    let user = new User({
+      username, role, deposit
+    })
+
+    // Set the user's password
+    user.setPassword(password);
+
+    // Create the user
+    user = await user.save();
+
+    return res.status(200).json({
+      message: "User was created successfully!",
+      user: {
+        username,
+        role,
+        deposit
+      }
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      message: err.message
+    })
   }
-  // Validate password
-  if (!password) {
-
-  }
-  // Validate role
-  if (!role) {
-
-  }
-  // Set deposit to zero
-  let deposit = 0;
-
-  let user = new User({
-    username, password, role, deposit
-  })
-
-  user = await user.save();
-
-  // Create account
-  return res.status(200).json({
-    message: "User was created successfully!",
-    user
-  });
 });
 
 app.use((req, res, next) => {
