@@ -9,13 +9,13 @@ provider:
   runtime: nodejs12.x
   lambdaHashingVersion: '20201221'
 
+plugins:
+  - serverless-offline
+
 functions:
   api:
-    handler: handler.handler
+    handler: ./functions/user.handler
     events:
       - http:
-          path: /
-          method: ANY
-      - http:
-          path: /{proxy+}
+          path: /user/{proxy+}
           method: ANY
