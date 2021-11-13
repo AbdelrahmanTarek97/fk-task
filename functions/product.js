@@ -85,7 +85,7 @@ app.post("/product/create", Auth("seller"), async (req, res, next) => {
 app.get("/product/all", Auth(null), async (req, res) => {
     try {
         let { user } = req;
-        let page = req.query.page;
+        let { page } = req.query;
         // If this is a seller getting their own products
         let myProducts = req.query.myProducts;
         if (!page) page = 1;
