@@ -10,9 +10,10 @@ const mongoose = require("mongoose");
 const config = require("../config/config.json");
 // Import JWT
 const jwt = require('jsonwebtoken');
+// Placeholder for auth middleware
+const Auth = require('../middleware/auth')
 // Placeholder for User model
 let User;
-
 // Initalize an express App!
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(async (req, res, next) => {
     await mongoose.connect(uri);
   }
   if (!User)
+    // Import User model
     User = require("../models/user")
   next();
 })
@@ -144,13 +146,29 @@ app.post("/user/login", async (req, res) => {
       );
 
       // user
-      return res.status(200).json({ token });
+      return res.status(200).json({ username, role: user.role, deposit: user.deposit, token });
     }
     return res.status(400).send({ message: "Invalid Credentials" });
   } catch (err) {
     console.log(err);
     return res.status(400).send({ message: "Invalid Credentials" });
   }
+});
+
+app.get("/user", Auth, (req, res) => {
+  try {
+    let { user } = req;
+    let { username, role, deposit } = user;
+    return res.status(200).json({ username, role, deposit });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ message: "Failed to get user info!" });
+  }
+})
+
+app.patch("/user", Auth, async (req, res) => {
+
+
 });
 
 app.use((req, res, next) => {

@@ -1,19 +1,21 @@
 const jwt = require("jsonwebtoken");
+User = require("../models/user");
 
 // Import database json file
 const config = require("../config/config.json");
 
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
     const token =
         req.body.token || req.query.token || req.headers["x-access-token"];
 
     if (!token) {
-        return res.status(403).send("A token is required for authentication");
+        return res.status(401).send({ message: "A token is required for authentication" });
     }
     try {
         const decoded = jwt.verify(token, config.tokenPK);
-        req.user = decoded;
+        let user = await User.findOne({ username: decoded.username });
+        req.user = user;
     } catch (err) {
         return res.status(401).send("Invalid Token");
     }
