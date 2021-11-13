@@ -33,13 +33,13 @@ app.use(async (req, res, next) => {
     if (mongoose.connection.readyState !== 1) {
         uri = config.dbUri;
         await mongoose.connect(uri);
+        if (!User)
+            // Import User model
+            User = require("../models/user")
+        if (!Product)
+            // Import Product model
+            Product = require("../models/product")
     }
-    if (!User)
-        // Import User model
-        User = require("../models/user")
-    if (!Product)
-        // Import Product model
-        Product = require("../models/product")
     next();
 })
 
@@ -153,7 +153,18 @@ app.patch("/product/:id", Auth("seller"), async (req, res) => {
 // Create an endpoint for deleting a product
 app.delete("/product/:id", Auth("seller"), async (req, res) => {
     try {
+        // Extract user, body, and path param from the request
+        let { user } = req;
+        let { id } = req.params;
 
+        // find Product
+        let product = await Product.findOne({ _id: id, sellerId: user.id });
+
+        if (!product)
+            throw Error("Product does not exist or cannot be edited by this user!")
+
+        await Product.deleteOne({ _id: id, sellerId: user.id });
+        return res.status(200).json({ message: "Product deleted successfully!" });
     } catch (err) {
         console.log(err);
         return res.status(400).send({ message: err.message });
