@@ -283,32 +283,12 @@ app.post("/user/deposit", Auth("buyer"), async (req, res) => {
   }
 })
 
-app.post("/user/deposit", Auth("buyer"), async (req, res) => {
+app.post("/user/reset", Auth("buyer"), async (req, res) => {
   try {
     let { user } = req;
-    // Extract number of each coin type
-    let { five, ten, twenty, fifty, hundred } = req.query;
-
-    // Convert values to numbers
-    five = Number(five);
-    ten = Number(ten);
-    twenty = Number(twenty);
-    fifty = Number(fifty);
-    hundred = Number(hundred);
-
-    // Check if any values are not provided
-    if (!five || (five && five < 0)) five = 0;
-    if (!ten || (ten && ten < 0)) ten = 0;
-    if (!twenty || (twenty && twenty < 0)) twenty = 0;
-    if (!fifty || (fifty && fifty < 0)) fifty = 0;
-    if (!hundred || (hundred && hundred < 0)) hundred = 0;
-
-
-    let totalDeposit = (five * 5) + (ten * 10) + (twenty * 20) + (fifty * 50) + (hundred * 100);
-
-    user.deposit = user.deposit + totalDeposit;
+    user.deposit = 0;
     await user.save();
-    return res.status(200).json({ message: `Amount ${totalDeposit} deposited successfully!` });
+    return res.status(200).json({ message: `Deposit has been reset successfully!` });
 
   } catch (err) {
     console.log(err);
