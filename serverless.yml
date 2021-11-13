@@ -13,9 +13,15 @@ plugins:
   - serverless-offline
 
 functions:
-  api:
+  user:
     handler: ./functions/user.handler
     events:
       - http:
           path: /user/{proxy+}
+          method: ANY
+  product:
+    handler: ./functions/product.handler
+    events:
+      - http:
+          path: /product/{proxy+}
           method: ANY
