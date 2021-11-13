@@ -6,6 +6,9 @@ In order to run locally:
 serverless login
 ```
 
+Make sure to download node first!
+
+
 install dependencies by running the following commands:
 
 ```
