@@ -296,6 +296,66 @@ app.post("/user/reset", Auth("buyer"), async (req, res) => {
   }
 })
 
+app.post("/user/buy", Auth("buyer"), async (req, res) => {
+  try {
+    let { productId, amount } = req.query;
+    let { user } = req;
+    // Get the product
+    let product = await Product.findOne({ _id: productId });
+
+    if (!product)
+      throw Error("Product does not exist!");
+    if (product.amountAvailable < amount)
+      throw Error("Product does not have sufficient stock for this purchase!")
+    // Get the product price
+    let price = product.cost;
+
+    // Get the total price
+    let totalPrice = price * amount;
+
+    // Calculate the refund value
+    let totalRefund = user.deposit - totalPrice;
+
+    // check if user cant afford
+    if (totalRefund < 0)
+      throw Error("Insufficient funds!");
+
+    // Divide into coins
+    let hundreds = Math.floor(totalRefund / 100);
+    totalRefund = totalRefund % 100;
+
+    let fifties = Math.floor(totalRefund / 50);
+    totalRefund = totalRefund % 50;
+
+    let twenties = Math.floor(totalRefund / 20);
+    totalRefund = totalRefund % 20;
+
+    let tens = Math.floor(totalRefund / 10);
+    totalRefund = totalRefund % 10;
+
+    let fives = Math.floor(totalRefund / 5);
+    totalRefund = totalRefund % 5;
+
+    // remove amount from the stock
+    product.amountAvailable = product.amountAvailable - amount;
+
+    // reset user deposit
+    user.deposit = 0;
+
+    await Promise.all([user.save(), product.save()]);
+
+    return res.status(200).json({
+      message: `Purchase was successful!`, refund: {
+        hundreds, fifties, twenties, tens, fives
+      }
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ message: err.message });
+  }
+})
+
 app.use((req, res, next) => {
   return res.status(404).json({
     error: "Not Found",
