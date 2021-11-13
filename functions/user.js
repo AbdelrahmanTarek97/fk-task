@@ -274,9 +274,9 @@ app.post("/user/deposit", Auth("buyer"), async (req, res) => {
     let totalDeposit = (five * 5) + (ten * 10) + (twenty * 20) + (fifty * 50) + (hundred * 100);
 
     user.deposit = user.deposit + totalDeposit;
+    await user.save();
     return res.status(200).json({ message: `Amount ${totalDeposit} deposited successfully!` });
 
-    await user.save();
   } catch (err) {
     console.log(err);
     return res.status(400).send({ message: err.message });
