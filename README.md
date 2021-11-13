@@ -27,3 +27,13 @@ Deploy the project using:
 ```
 serverless deploy
 ```
+
+This project is currently deployed at:
+```
+https://ztguxbkhzg.execute-api.us-east-1.amazonaws.com/dev
+```
+
+Download the postman package to test the project:
+```
+https://drive.google.com/file/d/1IC7nUrlVQ-45uOIZqowLs9iEWM0QrwBQ/view?usp=sharing
+```
