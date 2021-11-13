@@ -116,7 +116,6 @@ app.patch("/product/:id", Auth("seller"), async (req, res) => {
 
         // find Product
         let product = await Product.findOne({ _id: id, sellerId: user.id });
-        console.log(id)
 
         if (!product)
             throw Error("Product does not exist or cannot be edited by this user!")
@@ -152,8 +151,13 @@ app.patch("/product/:id", Auth("seller"), async (req, res) => {
 })
 
 // Create an endpoint for deleting a product
-app.delete("/product", Auth("seller"), async (req, res) => {
+app.delete("/product/:id", Auth("seller"), async (req, res) => {
+    try {
 
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send({ message: err.message });
+    }
 })
 
 app.use((req, res, next) => {
