@@ -57,8 +57,8 @@ app.post("/user/register", async (req, res, next) => {
     if (!(match && username === match[0]))
       throw Error("Username can only consist of letters and numbers!")
 
-    // check if user already exist
-    // Validate if user exist in our database
+    // check if user already exists
+    // Validate if user exists in our database
     const oldUser = await User.findOne({ username });
 
     if (oldUser) {
@@ -157,8 +157,11 @@ app.post("/user/login", async (req, res) => {
 
 app.get("/user", Auth, (req, res) => {
   try {
+    // Get the user object put by the auth middleware
     let { user } = req;
+    // Extract values from the user object
     let { username, role, deposit } = user;
+    // return chosen fields to user
     return res.status(200).json({ username, role, deposit });
   } catch (err) {
     console.log(err);
@@ -167,7 +170,58 @@ app.get("/user", Auth, (req, res) => {
 })
 
 app.patch("/user", Auth, async (req, res) => {
+  try {
+    // Get the user object put by the auth middleware
+    let { user } = req;
+    if (!req.body)
+      throw Error("request body needs to be provided!");
+    // Extract the update values from the request body
+    let { username, password } = req.body;
+    // validate username if it's provided
+    if (username && username !== user.username) {
+      // Test username using regex
+      let match = username.match(/^[a-zA-Z0-9]+$/);
+      if (!(match && username === match[0]))
+        throw Error("Username can only consist of letters and numbers!")
 
+      // Check if the username is used before
+      // check if user already exists
+      // Validate if user exists in our database
+      const oldUser = await User.findOne({ username });
+      if (oldUser) {
+        throw Error("Username already exists. Please choose another username!");
+      }
+      // Update the username in the user object
+      user.username = username;
+    }
+
+    // validate password if it's provided
+    if (password) {
+      // Test the password using the following regex
+      match = password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/);
+      if (!(match && password === match[0]))
+        throw Error(`Password needs to contain: at least 8 characters, at least 1 number, at least 1 lowercase character (a-z), at least 1 uppercase character (A-Z)`)
+      // Set the password in the user object
+      user.setPassword(password)
+    }
+
+    // Save the user object
+    await user.save();
+
+    // Create a new jwt token so that the user is not automatically logged out after an info update
+    const token = jwt.sign(
+      { username: user.username, role: user.role },
+      config.tokenPK,
+      {
+        expiresIn: config.tokenExpiresAfter,
+      }
+    );
+
+    return res.status(200).json({ username: user.username, role: user.role, deposit: user.deposit, token });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ message: err.message });
+  }
 
 });
 
