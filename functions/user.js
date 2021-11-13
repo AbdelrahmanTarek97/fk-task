@@ -98,7 +98,7 @@ app.post("/user/register", async (req, res, next) => {
       { username, role },
       config.tokenPK,
       {
-        expiresIn: "2h",
+        expiresIn: config.tokenExpiresAfter,
       }
     );
 
@@ -139,7 +139,7 @@ app.post("/user/login", async (req, res) => {
         { username, role: user.role },
         config.tokenPK,
         {
-          expiresIn: "2h",
+          expiresIn: config.tokenExpiresAfter,
         }
       );
 
