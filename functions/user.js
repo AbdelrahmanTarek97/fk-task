@@ -14,6 +14,8 @@ const jwt = require('jsonwebtoken');
 const Auth = require('../middleware/auth')
 // Placeholder for User model
 let User;
+// Placeholder for Product model
+let Product;
 // Initalize an express App!
 const app = express();
 
@@ -35,6 +37,9 @@ app.use(async (req, res, next) => {
   if (!User)
     // Import User model
     User = require("../models/user")
+  if (!Product)
+    // Import Product model
+    Product = require("../models/product")
   next();
 })
 
@@ -224,6 +229,27 @@ app.patch("/user", Auth(null), async (req, res) => {
   }
 
 });
+
+app.delete("/user", Auth(null), async (req, res) => {
+  try {
+    // If the user is a seller, delete their products
+    let { user } = req;
+    // Get role and id
+    let { role, id } = user;
+
+    // Search for products 
+    if (role === "seller") {
+      await Product.deleteMany({ sellerId: id })
+    }
+    // Delete user
+    await User.deleteOne({ _id: id });
+    return res.status(200).json({ message: "User deleted successfully!" });
+    return
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ message: err.message });
+  }
+})
 
 app.use((req, res, next) => {
   return res.status(404).json({
