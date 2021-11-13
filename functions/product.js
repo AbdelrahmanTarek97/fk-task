@@ -33,13 +33,13 @@ app.use(async (req, res, next) => {
     if (mongoose.connection.readyState !== 1) {
         uri = config.dbUri;
         await mongoose.connect(uri);
-        if (!User)
-            // Import User model
-            User = require("../models/user")
-        if (!Product)
-            // Import Product model
-            Product = require("../models/product")
     }
+    if (!User)
+        // Import User model
+        User = require("../models/user")
+    if (!Product)
+        // Import Product model
+        Product = require("../models/product")
     next();
 })
 
@@ -73,7 +73,7 @@ app.post("/product/create", Auth("seller"), async (req, res, next) => {
 
         let product = new Product({ productName, amountAvailable, cost, sellerId: user.id });
         product = await product.save();
-        return res.status(200).json({ message: "Product created successfully!" });
+        return res.status(200).json({ message: "Product created successfully!", product });
 
     } catch (err) {
         console.log(err);

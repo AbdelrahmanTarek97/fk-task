@@ -33,13 +33,13 @@ app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     uri = config.dbUri;
     await mongoose.connect(uri);
-    if (!User)
-      // Import User model
-      User = require("../models/user")
-    if (!Product)
-      // Import Product model
-      Product = require("../models/product")
   }
+  if (!User)
+    // Import User model
+    User = require("../models/user")
+  if (!Product)
+    // Import Product model
+    Product = require("../models/product")
   next();
 })
 

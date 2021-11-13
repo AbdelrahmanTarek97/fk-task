@@ -47,4 +47,11 @@ schema.methods.validPassword = function (password) {
 };
 
 // Create the model using the schema, this model can be used later for making operations to this collection (users) in the database
-module.exports = mongoose.model('User', schema);
+let UserModel;
+
+try {
+    User = mongoose.model('User')
+} catch (error) {
+    User = mongoose.model('User', schema);
+}
+module.exports = User;

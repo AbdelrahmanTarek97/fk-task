@@ -27,4 +27,9 @@ const schema = new mongoose.Schema({
 });
 
 // Create the model using the schema, this model can be used later for making operations to this collection (products) in the database
-module.exports = mongoose.model('Product', schema);
+try {
+    Product = mongoose.model('Product')
+} catch (error) {
+    Product = mongoose.model('Product', schema);
+}
+module.exports = Product;
