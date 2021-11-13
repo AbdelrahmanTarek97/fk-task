@@ -155,7 +155,7 @@ app.post("/user/login", async (req, res) => {
   }
 });
 
-app.get("/user", Auth, (req, res) => {
+app.get("/user", Auth(null), (req, res) => {
   try {
     // Get the user object put by the auth middleware
     let { user } = req;
@@ -169,7 +169,7 @@ app.get("/user", Auth, (req, res) => {
   }
 })
 
-app.patch("/user", Auth, async (req, res) => {
+app.patch("/user", Auth(null), async (req, res) => {
   try {
     // Get the user object put by the auth middleware
     let { user } = req;
