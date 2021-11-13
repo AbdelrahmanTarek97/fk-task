@@ -244,7 +244,6 @@ app.delete("/user", Auth(null), async (req, res) => {
     // Delete user
     await User.deleteOne({ _id: id });
     return res.status(200).json({ message: "User deleted successfully!" });
-    return
   } catch (err) {
     console.log(err);
     return res.status(400).send({ message: err.message });
